@@ -14,6 +14,24 @@ jobs:
   ai:
     runs-on: ubuntu-latest
     steps:
+      - name: Close Issue If Not Owner
+          uses: actions/github-script@v7
+          with:
+            script: |
+              const owner = context.repo.owner;
+              const issueCreator = context.payload.issue.user.login;
+              if (issueCreator !== owner) {
+                github.issues.update({
+                  ...context.repo,
+                  issue_number: context.issue.number,
+                  state: 'closed'
+                });
+                github.issues.createComment({
+                  ...context.repo,
+                  issue_number: context.issue.number,
+                  body: `Sorry, only the owner @${owner} can create issues in this repository.`
+                });
+              }
       - name: Checkout repository
         uses: actions/checkout@v4
 
